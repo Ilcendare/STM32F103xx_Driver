@@ -72,12 +72,12 @@ void MCAL_RCC_InitSystemClock (RCC_InitConfig_t * RCC_InitConfig)
             AHB_RCC->CR.PLLON = 0;
             
             
-		    /* Wait for the HSI clock source to be ready */
+	    /* Wait for the HSI clock source to be ready */
             while(AHB_RCC->CR.HSIRDY == 0);
 			
 			
-			/* Select the HSI as the system clock */
-			AHB_RCC->CFGR.SW = RCC_SYSTEM_CLOCK_HSI;
+	    /* Select the HSI as the system clock */
+	    AHB_RCC->CFGR.SW = RCC_SYSTEM_CLOCK_HSI;
             break;
 			
 			
@@ -117,8 +117,8 @@ void MCAL_RCC_InitSystemClock (RCC_InitConfig_t * RCC_InitConfig)
             while(AHB_RCC->CR.HSERDY == 0);
 			
 			
-			/* Select the HSE as the system clock */
-			AHB_RCC->CFGR.SW = RCC_SYSTEM_CLOCK_HSE;
+	    /* Select the HSE as the system clock */
+	    AHB_RCC->CFGR.SW = RCC_SYSTEM_CLOCK_HSE;
             break;
             
             
@@ -143,17 +143,17 @@ void MCAL_RCC_InitSystemClock (RCC_InitConfig_t * RCC_InitConfig)
             AHB_RCC->CFGR.PLLMUL = RCC_InitConfig->PLL_Multiplier_Factor - 2;
             
             
-			/* Enable the PLL clock source */
-			AHB_RCC->CR.HSION = 0;
+	    /* Enable the PLL clock source */
+	    AHB_RCC->CR.HSION = 0;
             AHB_RCC->CR.HSEON = 0;
             AHB_RCC->CR.PLLON = 1;
             
 			
-			/* Wait for the PLL clock source to be ready */
+	    /* Wait for the PLL clock source to be ready */
             while(AHB_RCC->CR.PLLRDY == 1);
             
             
-			/* Select the PLL as the system clock */
+	    /* Select the PLL as the system clock */
             AHB_RCC->CFGR.SW = RCC_SYSTEM_CLOCK_PLL;
             break;
             
@@ -205,34 +205,34 @@ ErrorState_t MCAL_RCC_EnablePeripheralClock (Peripheral_ID_t Peripheral_ID)
 	{
 		case DMA1...SDIO:     // Enabling a peripheral in the AHB bus
 		
-		SET_BIT(AHB_RCC->AHBENR.Word , Peripheral_ID);
+		    SET_BIT(AHB_RCC->AHBENR.Word , Peripheral_ID);
 		
-		Status = RCC_OK;
+		    Status = RCC_OK;
 		
-		break;
+		    break;
 		
 		
 		case AFIO...TIM11:    // Enabling a peripheral in the APB2 bus
 		
-		SET_BIT(AHB_RCC->APB2ENR.Word , Peripheral_ID - 100);
+		    SET_BIT(AHB_RCC->APB2ENR.Word , Peripheral_ID - 100);
 		
-		Status = RCC_OK;
+		    Status = RCC_OK;
 		
-		break;
+		    break;
 		
 		
 		case TIM2...DAC:      // Enabling a peripheral in the APB1 bus
 		
-		SET_BIT(AHB_RCC->APB1ENR.Word , Peripheral_ID - 200);
+		    SET_BIT(AHB_RCC->APB1ENR.Word , Peripheral_ID - 200);
 		
-		Status = RCC_OK;
+		    Status = RCC_OK;
 		
-		break;
+		    break;
 		
 		
 		default:
 		
-		Status = RCC_Error_Peripheral_ID;
+		    Status = RCC_Error_Peripheral_ID;
 		
 	}
 	
