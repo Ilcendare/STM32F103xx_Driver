@@ -39,6 +39,8 @@ typedef    signed long long int      s64;
 typedef    float            f32;
 typedef    double           f64;
 
+#define    NULL    (void *)0
+
 
 
 /* ============================================== */  
@@ -49,7 +51,36 @@ typedef    double           f64;
 
 typedef enum {
 	RCC_OK,
-	RCC_Error_Peripheral_ID
+	RCC_Error_NULLStruct,
+	RCC_Error_UndefinedPeripheralID,
+	
+	GPIO_OK,
+	GPIO_Error_UndefinedGPIOx,
+	GPIO_Error_UndefinedPinNumber,
+	GPIO_Error_UndefinedPinState,
+	
+	NVIC_OK,
+	NVIC_Error_UndefinedIRQ,
+	
+	SCB_OK,
+	SCB_Error_WrongVECTKEY,
+	SCB_Error_UndefinedGrouping,
+	
+	EXTI_OK,
+	EXTI_Error_UnavailableEXTILine,
+	EXTI_Error_UnavailableMaskState,
+	EXTI_Error_NoReqTrigSelected,
+	
+	STK_OK,
+	STK_Error_NULLStruct,
+	STK_Error_InitConfigClockSource,
+	STK_Error_InitConfigInterruptHandler,
+	STK_Error_InterruptHandlerDisabled,
+	STK_Error_NULLCallback,
+	
+	AFIO_OK,
+	AFIO_Error_UnavailablePort,
+	AFIO_Error_UnavailableEXTILine
 } ErrorState_t;
 
 

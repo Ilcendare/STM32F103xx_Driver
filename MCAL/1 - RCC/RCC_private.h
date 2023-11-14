@@ -27,7 +27,9 @@
 
 
 
-typedef struct {
+typedef union {
+
+	struct {
 	u32 HSION   :  1;
 	u32 HSIRDY  :  1;
 	u32         :  1;
@@ -41,11 +43,17 @@ typedef struct {
 	u32 PLLON   :  1;
 	u32 PLLRDY  :  1;
 	u32         :  6;
+	} Bit;
+
+	u32 Word;
+
 } RCC_CR;
 
 
 
-typedef struct {
+typedef union {
+
+	struct {
 	u32 SW       :  2;
 	u32 SWS      :  2;
 	u32 HPRE     :  4;
@@ -59,6 +67,10 @@ typedef struct {
 	u32          :  1;
 	u32 MCO      :  3;
 	u32          :  5;
+	} Bit;
+
+	u32 Word;
+
 } RCC_CFGR;
 
 
@@ -155,6 +167,9 @@ typedef union {
 /* ============================================== */  
 /* ========== RCC Registers Definition ========== */
 /* ============================================== */
+
+
+
 typedef struct {
     volatile RCC_CR        CR;
     volatile RCC_CFGR      CFGR;
@@ -171,6 +186,7 @@ typedef struct {
 
 
 #define    AHB_RCC_BASE_ADDRESS    0x40021000
+
 #define    AHB_RCC    ((RCC_Register_t *) AHB_RCC_BASE_ADDRESS)
 
 
@@ -178,9 +194,13 @@ typedef struct {
 /* ============================================== */  
 /* ============= RCC Private Macros ============= */
 /* ============================================== */
+
+
+
 #define    RCC_SYSTEM_CLOCK_HSI    0
 #define    RCC_SYSTEM_CLOCK_HSE    1
 #define    RCC_SYSTEM_CLOCK_PLL    2
+
 
 
 /* ============================================== */  
