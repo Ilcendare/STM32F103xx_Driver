@@ -41,6 +41,7 @@ typedef    double           f64;
 
 #define    NULL    (void *)0
 
+#define    MAX_TIMEOUT_DELAY    0xFFFFFFFFU
 
 
 /* ============================================== */  
@@ -53,6 +54,7 @@ typedef enum {
 	RCC_OK,
 	RCC_Error_NULLStruct,
 	RCC_Error_UndefinedPeripheralID,
+	RCC_Error_Timeout,
 	
 	GPIO_OK,
 	GPIO_Error_UndefinedGPIOx,

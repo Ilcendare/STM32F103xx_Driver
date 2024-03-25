@@ -1,8 +1,8 @@
 /***********************************************************
 ****    File Name    :  RCC_program.c                   ****
 ****    Author       :  Eng. Mahmoud Sayed              ****
-****    Date         :  31 Oct 2023                     ****
-****    Version      :  V 1.0                           ****
+****    Date         :  16 Dec 2023                     ****
+****    Version      :  V 2.0                           ****
 ****    Description  :  This file contains the RCC      ****
                         function implementation         ****
 ***********************************************************/
@@ -52,16 +52,15 @@ ErrorState_t MCAL_RCC_voidInitSystemClock (RCC_InitConfig_t * RCC_InitConfig)
 	
 	if(RCC_InitConfig != NULL)
 	{
-		AHB_RCC->CR.Word      = 0x00000000;
-	    AHB_RCC->CFGR.Word    = 0x00000000;
-	    AHB_RCC->AHBENR.Word  = 0x00000014;
-	    AHB_RCC->APB1ENR.Word = 0x00000000;
-	    AHB_RCC->APB2ENR.Word = 0x00000000;
+		/* Reset all RCC registers */
+		AHB_RCC->CR.Word      = 0x00000000U;
+	    AHB_RCC->CFGR.Word    = 0x00000000U;
+	    AHB_RCC->AHBENR.Word  = 0x00000014U;
+	    AHB_RCC->APB1ENR.Word = 0x00000000U;
+	    AHB_RCC->APB2ENR.Word = 0x00000000U;
 	    
-	    
-        u32 RCC_HSI_TIMEOUT_COUNTER = 0;
-        u32 RCC_HSE_TIMEOUT_COUNTER = 0;
-        u32 RCC_PLL_TIMEOUT_COUNTER = 0;
+	    /* Define the RCC timeout counter variable */
+        u32 RCC_TIMEOUT_COUNTER = 0;
 	    
         
         /** Configure the AHB, APB1, and APB2 prescalers **/
@@ -85,16 +84,20 @@ ErrorState_t MCAL_RCC_voidInitSystemClock (RCC_InitConfig_t * RCC_InitConfig)
             
             
 		    /* Wait for the HSI clock source to be ready */
-            while((AHB_RCC->CR.Bit.HSIRDY == 0) && (RCC_HSI_TIMEOUT_COUNTER < 0xFFFF))
+            while((AHB_RCC->CR.Bit.HSIRDY == 0) && (RCC_TIMEOUT_COUNTER < MAX_TIMEOUT_DELAY))
             {
-            	RCC_HSI_TIMEOUT_COUNTER++;
+            	RCC_TIMEOUT_COUNTER++;
             }
 
-            if(RCC_HSI_TIMEOUT_COUNTER == 0xFFFFFFFF)
+
+			/* Check if a timeout has occured */
+            if(RCC_TIMEOUT_COUNTER == MAX_TIMEOUT_DELAY)
 			{
-				//Local_enumState = RCC_Error_Timeout;
+				Local_enumState = RCC_Error_Timeout;
+				break;
 			}
 			
+
 			/* Select the HSI as the system clock */
 			AHB_RCC->CFGR.Bit.SW = RCC_SYSTEM_CLOCK_HSI;
             break;
@@ -131,16 +134,20 @@ ErrorState_t MCAL_RCC_voidInitSystemClock (RCC_InitConfig_t * RCC_InitConfig)
             
             
             /* Wait for the HSI clock source to be ready */
-            while((AHB_RCC->CR.Bit.HSERDY == 0) && (RCC_HSE_TIMEOUT_COUNTER < 0xFFFFFFFF))
+            while((AHB_RCC->CR.Bit.HSERDY == 0) && (RCC_TIMEOUT_COUNTER < MAX_TIMEOUT_DELAY))
             {
-            	RCC_HSE_TIMEOUT_COUNTER++;
+            	RCC_TIMEOUT_COUNTER++;
             }
 
-            if(RCC_HSE_TIMEOUT_COUNTER == 0xFFFFFFFF)
+
+			/* Check if a timeout has occured */
+            if(RCC_TIMEOUT_COUNTER == MAX_TIMEOUT_DELAY)
 			{
-				//Local_enumState = RCC_Error_Timeout;
+				Local_enumState = RCC_Error_Timeout;
+				break;
 			}
 			
+
 			/* Select the HSE as the system clock */
 			AHB_RCC->CFGR.Bit.SW = RCC_SYSTEM_CLOCK_HSE;
             break;
@@ -172,16 +179,21 @@ ErrorState_t MCAL_RCC_voidInitSystemClock (RCC_InitConfig_t * RCC_InitConfig)
             
 			
 			/* Wait for the PLL clock source to be ready */
-            while((AHB_RCC->CR.Bit.PLLRDY == 1) && (RCC_PLL_TIMEOUT_COUNTER < 0xFFFFFFFF))
+            while((AHB_RCC->CR.Bit.PLLRDY == 1) && (RCC_TIMEOUT_COUNTER < MAX_TIMEOUT_DELAY))
 			{
-            	RCC_PLL_TIMEOUT_COUNTER++;
+            	RCC_TIMEOUT_COUNTER++;
+				break;
 			}
 
-            if(RCC_PLL_TIMEOUT_COUNTER == 0xFFFFFFFF)
+
+			/* Check if a timeout has occured */
+            if(RCC_TIMEOUT_COUNTER == MAX_TIMEOUT_DELAY)
             {
-            	//Local_enumState = RCC_Error_Timeout;
+            	Local_enumState = RCC_Error_Timeout;
+				break;
             }
             
+
 			/* Select the PLL as the system clock */
             AHB_RCC->CFGR.Bit.SW = RCC_SYSTEM_CLOCK_PLL;
             break;
@@ -206,7 +218,16 @@ ErrorState_t MCAL_RCC_voidInitSystemClock (RCC_InitConfig_t * RCC_InitConfig)
             
             
             /* Wait for the HSI clock source to be ready */
-            while(!(AHB_RCC->CR.Bit.HSIRDY == 1));
+            while((AHB_RCC->CR.Bit.HSIRDY == 0) && (RCC_TIMEOUT_COUNTER < MAX_TIMEOUT_DELAY))
+            {
+            	RCC_TIMEOUT_COUNTER++;
+            }
+
+            if(RCC_TIMEOUT_COUNTER == MAX_TIMEOUT_DELAY)
+			{
+				Local_enumState = RCC_Error_Timeout;
+				break;
+			}
             
             
             /* Select the HSI as the system clock */
@@ -233,45 +254,44 @@ ErrorState_t MCAL_RCC_voidInitSystemClock (RCC_InitConfig_t * RCC_InitConfig)
 
 
 
-ErrorState_t MCAL_RCC_enumEnablePeripheralClock (Peripheral_ID_t Peripheral_ID)
+ErrorState_t MCAL_RCC_enumEnablePeripheralClock (Peripheral_ID_t Copy_enumPeripheralID)
 {
 	
 	ErrorState_t Status;
 	
 	
-	switch(Peripheral_ID)
+	switch(Copy_enumPeripheralID)
 	{
-		case Per_ID_AHB_DMA1...Per_ID_AHB_SDIO:     // Enabling a peripheral in the AHB bus
+		case Per_ID_AHB_DMA1...Per_ID_AHB_SDIO:     // Enable a peripheral in the AHB bus
 		
-		SET_BIT(AHB_RCC->AHBENR.Word , Peripheral_ID);
+			SET_BIT(AHB_RCC->AHBENR.Word , Copy_enumPeripheralID);
 		
-		Status = RCC_OK;
+			Status = RCC_OK;
 		
-		break;
-		
-		
-		case Per_ID_APB2_AFIO...Per_ID_APB2_TIM11:    // Enabling a peripheral in the APB2 bus
-		
-		SET_BIT(AHB_RCC->APB2ENR.Word , (Peripheral_ID - 100));
-		
-		Status = RCC_OK;
-		
-		break;
+			break;
 		
 		
-		case Per_ID_APB1_TIM2...Per_ID_APB1_DAC:      // Enabling a peripheral in the APB1 bus
+		case Per_ID_APB2_AFIO...Per_ID_APB2_TIM11:    // Enable a peripheral in the APB2 bus
 		
-		SET_BIT(AHB_RCC->APB1ENR.Word , (Peripheral_ID - 200));
+			ET_BIT(AHB_RCC->APB2ENR.Word , (Copy_enumPeripheralID - 100U));
 		
-		Status = RCC_OK;
+			Status = RCC_OK;
 		
-		break;
+			break;
+		
+		
+		case Per_ID_APB1_TIM2...Per_ID_APB1_DAC:      // Enable a peripheral in the APB1 bus
+		
+			SET_BIT(AHB_RCC->APB1ENR.Word , (Copy_enumPeripheralID - 200U));
+		
+			Status = RCC_OK;
+		
+			break;
 		
 		
 		default:
 		
-		Status = RCC_Error_Peripheral_ID;
-		
+			Status = RCC_Error_UndefinedPeripheralID;
 	}
 	
 	return Status;
@@ -282,45 +302,44 @@ ErrorState_t MCAL_RCC_enumEnablePeripheralClock (Peripheral_ID_t Peripheral_ID)
 
 
 
-ErrorState_t MCAL_RCC_enumDisablePeripheralClock (Peripheral_ID_t Peripheral_ID)
+ErrorState_t MCAL_RCC_enumDisablePeripheralClock (Peripheral_ID_t Copy_enumPeripheralID)
 {
 
 	ErrorState_t Status;
 
 
-	switch(Peripheral_ID)
+	switch(Copy_enumPeripheralID)
 	{
-		case Per_ID_AHB_DMA1...Per_ID_AHB_SDIO:     // Enabling a peripheral in the AHB bus
+		case Per_ID_AHB_DMA1...Per_ID_AHB_SDIO:     // Disable a peripheral in the AHB bus
 
-		CLR_BIT(AHB_RCC->AHBENR.Word , Peripheral_ID);
+			CLR_BIT(AHB_RCC->AHBENR.Word , Copy_enumPeripheralID);
 
-		Status = RCC_OK;
+			Status = RCC_OK;
 
-		break;
-
-
-		case Per_ID_APB2_AFIO...Per_ID_APB2_TIM11:    // Enabling a peripheral in the APB2 bus
-
-		CLR_BIT(AHB_RCC->APB2ENR.Word , (Peripheral_ID - 100));
-
-		Status = RCC_OK;
-
-		break;
+			break;
 
 
-		case Per_ID_APB1_TIM2...Per_ID_APB1_DAC:      // Enabling a peripheral in the APB1 bus
+		case Per_ID_APB2_AFIO...Per_ID_APB2_TIM11:    // Disable a peripheral in the APB2 bus
 
-		CLR_BIT(AHB_RCC->APB1ENR.Word , (Peripheral_ID - 200));
+			CLR_BIT(AHB_RCC->APB2ENR.Word , (Copy_enumPeripheralID - 100U));
 
-		Status = RCC_OK;
+			Status = RCC_OK;
 
-		break;
+			break;
+
+
+		case Per_ID_APB1_TIM2...Per_ID_APB1_DAC:      // Disable a peripheral in the APB1 bus
+
+			CLR_BIT(AHB_RCC->APB1ENR.Word , (Copy_enumPeripheralID - 200U));
+
+			Status = RCC_OK;
+
+			break;
 
 
 		default:
 
-		Status = RCC_Error_Peripheral_ID;
-
+			Status = RCC_Error_UndefinedPeripheralID;
 	}
 
 	return Status;
@@ -331,5 +350,3 @@ ErrorState_t MCAL_RCC_enumDisablePeripheralClock (Peripheral_ID_t Peripheral_ID)
 /** ======================================================== **/
 /** ================ RCC ISRs Implementation =============== **/
 /** ======================================================== **/
-
-
